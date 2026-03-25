@@ -37,7 +37,6 @@ Players.PlayerAdded:Connect(function(player)
     end)
 end)
 
--- Optional: Listen to existing players (if script runs mid-game)
 for _, player in pairs(Players:GetPlayers()) do
     player.Chatted:Connect(function(msg)
         if string.sub(msg, 1, #COMMAND_PREFIX) == COMMAND_PREFIX then
