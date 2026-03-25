@@ -1,27 +1,59 @@
--- Simple GUI by you
+local HttpService = game:GetService("HttpService")
+local Players = game:GetService("Players")
 
-local ScreenGui = Instance.new("ScreenGui")
-local Frame = Instance.new("Frame")
-local TextButton = Instance.new("TextButton")
+local COMMAND_PREFIX = "-"
 
--- Parent
-ScreenGui.Parent = game.CoreGui
+local function loadCommands()
+    local url = "https://raw.githubusercontent.com/mewannacode-egg/Aviation/main/cmds.lua"
+    local success, result = pcall(function()
+        return loadstring(game:HttpGet(url))()
+    end)
+    if success and type(result) == "table" then
+        return result
+    else
+        warn("Failed to load commands:", result)
+        return {}
+    end
+end
 
--- Frame
-Frame.Parent = ScreenGui
-Frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-Frame.Size = UDim2.new(0, 300, 0, 200)
-Frame.Position = UDim2.new(0.5, -150, 0.5, -100)
+local Commands = loadCommands()
 
--- Button
-TextButton.Parent = Frame
-TextButton.Size = UDim2.new(0, 200, 0, 50)
-TextButton.Position = UDim2.new(0.5, -100, 0.5, -25)
-TextButton.Text = "Click Me"
-TextButton.BackgroundColor3 = Color3.fromRGB(50, 150, 255)
-TextButton.TextColor3 = Color3.fromRGB(255,255,255)
+Players.PlayerAdded:Connect(function(player)
+    player.Chatted:Connect(function(msg)
+        if string.sub(msg, 1, #COMMAND_PREFIX) == COMMAND_PREFIX then
+            local split = string.split(msg, " ")
+            local cmdName = split[1] 
+            local args = {unpack(split, 2)} 
 
--- Button function
-TextButton.MouseButton1Click:Connect(function()
-    print("Button Clicked!")
+            if Commands[cmdName] then
+                local success, err = pcall(function()
+                    Commands[cmdName](args, player)
+                end)
+                if not success then
+                    warn("Error running command "..cmdName..": "..tostring(err))
+                end
+            end
+        end
+    end)
 end)
+
+-- Optional: Listen to existing players (if script runs mid-game)
+for _, player in pairs(Players:GetPlayers()) do
+    player.Chatted:Connect(function(msg)
+        if string.sub(msg, 1, #COMMAND_PREFIX) == COMMAND_PREFIX then
+            local split = string.split(msg, " ")
+            local cmdName = split[1]
+            local args = {unpack(split, 2)}
+            if Commands[cmdName] then
+                local success, err = pcall(function()
+                    Commands[cmdName](args, player)
+                end)
+                if not success then
+                    warn("Error running command "..cmdName..": "..tostring(err))
+                end
+            end
+        end
+    end)
+end
+
+print("Admin command system loaded. Prefix: "..COMMAND_PREFIX)
