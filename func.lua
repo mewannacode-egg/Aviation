@@ -1,44 +1,29 @@
-local Players = game:GetService("Players")
-local LocalPlayer = Players.LocalPlayer
-
 local funcs = {}
 
-function funcs.getPlayer(name)
-    name = string.lower(name)
+local Players = game:GetService("Players")
 
-    for _, plr in ipairs(Players:GetPlayers()) do
-        if string.lower(plr.Name):sub(1, #name) == name then
-            return plr
-        end
-    end
+function funcs:GetPlayerFromString(str)
+	str = string.lower(str)
 
-    return nil
+	for _, player in ipairs(Players:GetPlayers()) do
+		if string.find(string.lower(player.Name), str) 
+		or string.find(string.lower(player.DisplayName), str) then
+			return player
+		end
+	end
+
+	return nil
 end
 
-function funcs.gotoPlayer(targetName)
-    local target = funcs.getPlayer(targetName)
-    if not target then
-        return false, "player not found"
-    end
+function funcs:GotoPlayer(fromPlayer, toPlayer)
+	if not (fromPlayer.Character and toPlayer.Character) then return end
+	
+	local hrp1 = fromPlayer.Character:FindFirstChild("HumanoidRootPart")
+	local hrp2 = toPlayer.Character:FindFirstChild("HumanoidRootPart")
 
-    local myChar = LocalPlayer.Character
-    local targetChar = target.Character
-
-    if not myChar or not targetChar then
-        return false, "character not loaded"
-    end
-
-    local myRoot = myChar:FindFirstChild("HumanoidRootPart")
-    local targetRoot = targetChar:FindFirstChild("HumanoidRootPart")
-
-    if not myRoot or not targetRoot then
-        return false, "missing root"
-    end
-
-    -- teleport behind target (3 studs)
-    myRoot.CFrame = targetRoot.CFrame * CFrame.new(0, 0, 3)
-
-    return true
+	if hrp1 and hrp2 then
+		hrp1.CFrame = hrp2.CFrame + Vector3.new(0, 3, 0)
+	end
 end
 
 return funcs
