@@ -3,12 +3,17 @@ local funcs = require(script.Parent.function)
 local cmds = {}
 
 cmds["goto"] = function(args)
-    local target = args[1]
-    if not target then return end
+    local targetName = args[1]
 
-    local success, err = funcs.gotoPlayer(target)
+    if not targetName then
+        warn("no target provided")
+        return
+    end
+
+    local success, err = funcs.gotoPlayer(targetName)
+
     if not success then
-        warn("[goto]:", err)
+        warn("[goto error]:", err)
     end
 end
 
