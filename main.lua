@@ -1,58 +1,25 @@
-local HttpService = game:GetService("HttpService")
-local Players = game:GetService("Players")
+local cmds = require(script.Parent.cmds)
 
-local COMMAND_PREFIX = "-"
+local prefix = "-"
 
-local function loadCommands()
-    local url = "https://raw.githubusercontent.com/mewannacode-egg/Aviation/main/cmds.lua"
-    local success, result = pcall(function()
-        return loadstring(game:HttpGet(url))()
-    end)
-    if success and type(result) == "table" then
-        return result
+local function runCommand(message)
+    if message:sub(1, #prefix) ~= prefix then return end
+
+    local args = {}
+    for word in message:sub(#prefix + 1):gmatch("%S+") do
+        table.insert(args, word)
+    end
+
+    local cmdName = table.remove(args, 1)
+    cmdName = string.lower(cmdName or "")
+
+    local cmd = cmds[cmdName]
+    if cmd then
+        cmd(args)
     else
-        warn("Failed to load commands:", result)
-        return {}
+        warn("unknown command:", cmdName)
     end
 end
 
-local Commands = loadCommands()
-
-Players.PlayerAdded:Connect(function(player)
-    player.Chatted:Connect(function(msg)
-        if string.sub(msg, 1, #COMMAND_PREFIX) == COMMAND_PREFIX then
-            local split = string.split(msg, " ")
-            local cmdName = split[1] 
-            local args = {unpack(split, 2)} 
-
-            if Commands[cmdName] then
-                local success, err = pcall(function()
-                    Commands[cmdName](args, player)
-                end)
-                if not success then
-                    warn("Error running command "..cmdName..": "..tostring(err))
-                end
-            end
-        end
-    end)
-end)
-
-for _, player in pairs(Players:GetPlayers()) do
-    player.Chatted:Connect(function(msg)
-        if string.sub(msg, 1, #COMMAND_PREFIX) == COMMAND_PREFIX then
-            local split = string.split(msg, " ")
-            local cmdName = split[1]
-            local args = {unpack(split, 2)}
-            if Commands[cmdName] then
-                local success, err = pcall(function()
-                    Commands[cmdName](args, player)
-                end)
-                if not success then
-                    warn("Error running command "..cmdName..": "..tostring(err))
-                end
-            end
-        end
-    end)
-end
-
-print("Admin command system loaded. Prefix: "..COMMAND_PREFIX)
+-- example trigger (you can replace this with your GUI input)
+game:GetService("Players").LocalPlayer.Chatted:Connect(runCommand)
