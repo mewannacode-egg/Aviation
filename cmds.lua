@@ -1,4 +1,4 @@
-local funcs = loadstring(game:HttpGet("https://raw.githubusercontent.com/<username>/<repo>/main/func.lua"))()
+local funcs = loadstring(game:HttpGet("https://raw.githubusercontent.com/Aviation/main/main/func.lua"))()
 local commands = {}
 local function addCommand(name, callback)
     commands[name] = callback
