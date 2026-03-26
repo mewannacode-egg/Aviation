@@ -2,7 +2,7 @@ local funcs = {}
 
 local Players = game:GetService("Players")
 
---Player targetting
+---PLAYER TARGETING---
 function funcs:GetPlayers(str, sender)
 	local Players = game:GetService("Players")
 	str = string.lower(str)
@@ -41,7 +41,9 @@ function funcs:GetPlayers(str, sender)
 	return targets
 end
 
----functions for commands---
+---COMMANDS---
+
+--GOTO
 function funcs:Goto(from, to)
 	if not (from.Character and to.Character) then return end
 
@@ -50,6 +52,65 @@ function funcs:Goto(from, to)
 
 	if hrp1 and hrp2 then
 		hrp1.CFrame = hrp2.CFrame + Vector3.new(0, 3, 0)
+	end
+end
+
+--FLY
+funcs.ActiveFlys = {}
+
+function funcs:StartFly(player, speed)
+	speed = speed or 40
+	local char = player.Character
+	if not char then return end
+
+	local hrp = char:FindFirstChild("HumanoidRootPart")
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hrp or not hum then return end
+
+	if self.ActiveFlys[player] then return end
+
+	local flyPart = Instance.new("Part")
+	flyPart.Name = "FlyController"
+	flyPart.Transparency = 1
+	flyPart.CanCollide = false
+	flyPart.Anchored = true
+	flyPart.CFrame = hrp.CFrame
+	flyPart.Parent = char
+
+	local flying = true
+	self.ActiveFlys[player] = {
+		Part = flyPart,
+		Flying = true
+	}
+
+	coroutine.wrap(function()
+		while flying and self.ActiveFlys[player] and self.ActiveFlys[player].Flying do
+			local move = hum.MoveDirection
+			if move.Magnitude > 0 then
+				local camCFrame = workspace.CurrentCamera.CFrame
+				local forward = Vector3.new(camCFrame.LookVector.X,0,camCFrame.LookVector.Z).Unit
+				local right = Vector3.new(camCFrame.RightVector.X,0,camCFrame.RightVector.Z).Unit
+
+				local dir = (forward * move.Z + right * move.X)
+				if dir.Magnitude > 0 then dir = dir.Unit end
+
+				flyPart.CFrame = flyPart.CFrame + dir * speed * RunService.Heartbeat:Wait()
+			else
+				RunService.Heartbeat:Wait()
+			end
+			hrp.CFrame = flyPart.CFrame
+		end
+	end)()
+end
+
+--UNFLY
+function funcs:StopFly(player)
+	if self.ActiveFlys[player] then
+		self.ActiveFlys[player].Flying = false
+		if self.ActiveFlys[player].Part then
+			self.ActiveFlys[player].Part:Destroy()
+		end
+		self.ActiveFlys[player] = nil
 	end
 end
 
