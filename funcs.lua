@@ -1,3 +1,5 @@
+local RunService = game:GetService("RunService")
+
 local funcs = {}
 
 local Players = game:GetService("Players")
@@ -20,7 +22,6 @@ function funcs:GetPlayers(str, sender)
 			if plr ~= sender then
 				table.insert(pool, plr)
 			end
-		end
 
 		if #pool > 0 then
 			return {pool[math.random(1, #pool)]}
