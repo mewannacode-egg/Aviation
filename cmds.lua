@@ -20,6 +20,19 @@ return function(funcs)
 			]]
 		},
 
+		fly = {
+			Code = [[
+				local speed = tonumber(args[1]) or 40
+				funcs:StartFly(player, speed)
+			]]
+		},
+
+		unfly = {
+			Code = [[
+				funcs:StopFly(player)
+			]]
+		},
+
 	}
 
 	function cmds:Run(player, msg)
