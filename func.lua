@@ -2,22 +2,20 @@ local funcs = {}
 
 local Players = game:GetService("Players")
 
-function funcs:GetPlayerFromString(str)
+function funcs:GetPlayer(str)
 	str = string.lower(str)
 
 	for _, player in ipairs(Players:GetPlayers()) do
-		if string.find(string.lower(player.Name), str) 
-		or string.find(string.lower(player.DisplayName), str) then
+		if string.find(string.lower(player.Name), str, 1, true)
+		or string.find(string.lower(player.DisplayName), str, 1, true) then
 			return player
 		end
 	end
-
-	return nil
 end
 
-function funcs:GotoPlayer(fromPlayer, toPlayer)
+function funcs:Goto(fromPlayer, toPlayer)
 	if not (fromPlayer.Character and toPlayer.Character) then return end
-	
+
 	local hrp1 = fromPlayer.Character:FindFirstChild("HumanoidRootPart")
 	local hrp2 = toPlayer.Character:FindFirstChild("HumanoidRootPart")
 
