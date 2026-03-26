@@ -15,8 +15,6 @@ return function(funcs)
                 for _, target in ipairs(targets) do
 	                funcs:Goto(player, target)
                 end
-			
-				end
 			]]
 		},
 
