@@ -1,49 +1,47 @@
-local funcs = require(script.Parent.funcs)
+return function(funcs)
 
-local cmds = {}
+	local cmds = {}
+	cmds.Prefix = "-"
 
-cmds.Prefix = "-"
+	cmds.Commands = {
 
-cmds.List = {
+		goto = {
+			Code = [[
+				local targetName = args[1]
+				if not targetName then return end
 
-	goto = {
-		Description = "Teleport to a player",
-		
-		Run = function(player, args)
-			local targetName = args[1]
-			if not targetName then return end
+				local target = funcs:GetPlayer(targetName)
+				if target then
+					funcs:Goto(player, target)
+				end
+			]]
+		}
 
-			local target = funcs:GetPlayerFromString(targetName)
-			if target then
-				funcs:GotoPlayer(player, target)
-			end
-		end
 	}
 
-}
+	function cmds:Run(player, message)
+		if message:sub(1,1) ~= self.Prefix then return end
 
-function cmds:Execute(player, message)
-	if string.sub(message, 1, 1) ~= self.Prefix then return end
+		local args = {}
+		for word in message:gmatch("%S+") do
+			table.insert(args, word)
+		end
 
-	local args = {}
-	for word in string.gmatch(message, "%S+") do
-		table.insert(args, word)
+		local cmdName = args[1]:sub(2):lower()
+		table.remove(args, 1)
+
+		local cmd = self.Commands[cmdName]
+		if not cmd then return end
+
+		local source = [[
+			return function(player, args, funcs)
+		]] .. cmd.Code .. [[
+			end
+		]]
+
+		local func = loadstring(source)()
+		func(player, args, funcs)
 	end
 
-	local commandName = string.sub(args[1], 2)
-	table.remove(args, 1)
-
-	local command = self.List[commandName]
-	if not command then return end
-
-	local code = [[
-		return function(player, args, command)
-			command.Run(player, args)
-		end
-	]]
-
-	local func = loadstring(code)()
-	func(player, args, command)
+	return cmds
 end
-
-return cmds
