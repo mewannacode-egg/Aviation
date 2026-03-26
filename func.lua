@@ -1,6 +1,15 @@
 local funcs = {}
 local Players = game:GetService("Players")
 
+function funcs.getPlayer(name)
+    for _, player in pairs(Players:GetPlayers()) do
+        if string.lower(player.Name):sub(1, #name) == string.lower(name) then
+            return player
+        end
+    end
+    return nil
+end
+
 function funcs.gotoPlayer(player, target)
     if player and target and player.Character and target.Character then
         local myRoot = player.Character:FindFirstChild("HumanoidRootPart")
