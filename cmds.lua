@@ -10,9 +10,12 @@ return function(funcs)
 				local targetName = args[1]
 				if not targetName then return end
 
-				local target = funcs:GetPlayer(targetName)
-				if target then
-					funcs:Goto(player, target)
+				local targets = funcs:GetPlayers(args[1], player)
+
+                for _, target in ipairs(targets) do
+	                funcs:Goto(player, target)
+                end
+			
 				end
 			]]
 		},
