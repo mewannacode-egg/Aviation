@@ -168,6 +168,9 @@ function funcs:Unwalkspeed(player)
 end
 
 --FLING
+local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
+
 function funcs:Fling(player, target)
 	if not player.Character or not target.Character then return end
 
@@ -176,9 +179,7 @@ function funcs:Fling(player, target)
 	local hum = char:FindFirstChildOfClass("Humanoid")
 
 	local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
-	local targetHum = target.Character:FindFirstChildOfClass("Humanoid")
-
-	if not root or not hum or not targetRoot or not targetHum then return end
+	if not root or not hum or not targetRoot then return end
 
 	local originalCFrame = root.CFrame
 
@@ -190,19 +191,20 @@ function funcs:Fling(player, target)
 		sethiddenproperty(LocalPlayer, "SimulationRadius", math.huge)
 	end)
 
+	local bv = Instance.new("BodyVelocity")
+	bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+	bv.Velocity = Vector3.zero
+	bv.Parent = root
+
 	local bav = Instance.new("BodyAngularVelocity")
 	bav.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
 	bav.AngularVelocity = Vector3.new(999999, 999999, 999999)
 	bav.Parent = root
 
-	local bv = Instance.new("BodyVelocity")
-	bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
-	bv.Velocity = Vector3.new(0,0,0)
-	bv.Parent = root
-
-	local toggle = false
-
+	local startTime = tick()
+	local lastTp = 0
 	local connection
+
 	connection = RunService.Heartbeat:Connect(function()
 		if not targetRoot or not targetRoot.Parent then
 			connection:Disconnect()
@@ -215,35 +217,42 @@ function funcs:Fling(player, target)
 			math.random(1,5)/100
 		)
 
-		local moveDir = targetHum.MoveDirection
-
-		root.CFrame =
+		local predicted =
 			targetRoot.CFrame +
-			(targetRoot.Velocity * 0.1) +
-			offset +
-			moveDir
+			(targetRoot.AssemblyLinearVelocity * 0.1)
 
-		toggle = not toggle
-		if toggle then
-			root.CFrame = root.CFrame * CFrame.Angles(0, math.pi, 0)
+		root.CFrame = predicted + offset
+
+		if tick() - lastTp >= 1 then
+			lastTp = tick()
+
+			root.CFrame = originalCFrame
+			task.wait()
+			root.CFrame = predicted
 		end
 
-		root.CanCollide = not root.CanCollide
+		if targetRoot.AssemblyLinearVelocity.Magnitude > 300 then
+		else
+			root.AssemblyLinearVelocity = Vector3.zero
+			root.AssemblyAngularVelocity = Vector3.zero
+		end
 
-		if targetRoot.AssemblyLinearVelocity.Magnitude < 1 then
+		if tick() - startTime > 2 then
 			connection:Disconnect()
 		end
 	end)
 
-	task.wait(1)
+	task.wait(2)
 
-	connection:Disconnect()
+	if connection then
+		connection:Disconnect()
+	end
 
-	bav:Destroy()
-	bv:Destroy()
+	if bv then bv:Destroy() end
+	if bav then bav:Destroy() end
 
-	root.AssemblyLinearVelocity = Vector3.new(0,0,0)
-	root.AssemblyAngularVelocity = Vector3.new(0,0,0)
+	root.AssemblyLinearVelocity = Vector3.zero
+	root.AssemblyAngularVelocity = Vector3.zero
 
 	root.CFrame = originalCFrame
 
