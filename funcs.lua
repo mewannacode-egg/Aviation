@@ -1,8 +1,7 @@
 local RunService = game:GetService("RunService")
+local Players = game:GetService("Players")
 
 local funcs = {}
-
-local Players = game:GetService("Players")
 
 ---PLAYER TARGETING---
 function funcs:GetPlayers(str, sender)
@@ -152,6 +151,7 @@ function funcs:SetWalkspeed(player, speed)
 	end)()
 end
 
+--UNWALKSPEED
 function funcs:Unwalkspeed(player)
 	if self.ActiveWalkspeed[player] then
 		self.ActiveWalkspeed[player].Running = false
@@ -165,6 +165,89 @@ function funcs:Unwalkspeed(player)
 	if hum then
 		hum.WalkSpeed = 16
 	end
+end
+
+--FLING
+function funcs:Fling(player, target)
+	if not player.Character or not target.Character then return end
+
+	local char = player.Character
+	local root = char:FindFirstChild("HumanoidRootPart")
+	local hum = char:FindFirstChildOfClass("Humanoid")
+
+	local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
+	local targetHum = target.Character:FindFirstChildOfClass("Humanoid")
+
+	if not root or not hum or not targetRoot or not targetHum then return end
+
+	local originalCFrame = root.CFrame
+
+	hum:ChangeState(Enum.HumanoidStateType.Physics)
+	hum:SetStateEnabled(Enum.HumanoidStateType.GettingUp, false)
+
+	pcall(function()
+		LocalPlayer.MaximumSimulationRadius = math.huge
+		sethiddenproperty(LocalPlayer, "SimulationRadius", math.huge)
+	end)
+
+	local bav = Instance.new("BodyAngularVelocity")
+	bav.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
+	bav.AngularVelocity = Vector3.new(999999, 999999, 999999)
+	bav.Parent = root
+
+	local bv = Instance.new("BodyVelocity")
+	bv.MaxForce = Vector3.new(9e9, 9e9, 9e9)
+	bv.Velocity = Vector3.new(0,0,0)
+	bv.Parent = root
+
+	local toggle = false
+
+	local connection
+	connection = RunService.Heartbeat:Connect(function()
+		if not targetRoot or not targetRoot.Parent then
+			connection:Disconnect()
+			return
+		end
+
+		local offset = Vector3.new(
+			math.random(1,5)/100,
+			math.random(1,5)/100,
+			math.random(1,5)/100
+		)
+
+		local moveDir = targetHum.MoveDirection
+
+		root.CFrame =
+			targetRoot.CFrame +
+			(targetRoot.Velocity * 0.1) +
+			offset +
+			moveDir
+
+		toggle = not toggle
+		if toggle then
+			root.CFrame = root.CFrame * CFrame.Angles(0, math.pi, 0)
+		end
+
+		root.CanCollide = not root.CanCollide
+
+		if targetRoot.AssemblyLinearVelocity.Magnitude < 1 then
+			connection:Disconnect()
+		end
+	end)
+
+	task.wait(1)
+
+	connection:Disconnect()
+
+	bav:Destroy()
+	bv:Destroy()
+
+	root.AssemblyLinearVelocity = Vector3.new(0,0,0)
+	root.AssemblyAngularVelocity = Vector3.new(0,0,0)
+
+	root.CFrame = originalCFrame
+
+	hum:SetStateEnabled(Enum.HumanoidStateType.GettingUp, true)
 end
 
 return funcs
