@@ -168,9 +168,6 @@ function funcs:Unwalkspeed(player)
 end
 
 --FLING
-local RunService = game:GetService("RunService")
-local Players = game:GetService("Players")
-
 function funcs:Fling(player, target)
 	if not player.Character or not target.Character then return end
 
@@ -179,6 +176,7 @@ function funcs:Fling(player, target)
 	local hum = char:FindFirstChildOfClass("Humanoid")
 
 	local targetRoot = target.Character:FindFirstChild("HumanoidRootPart")
+
 	if not root or not hum or not targetRoot then return end
 
 	local originalCFrame = root.CFrame
@@ -198,11 +196,11 @@ function funcs:Fling(player, target)
 
 	local bav = Instance.new("BodyAngularVelocity")
 	bav.MaxTorque = Vector3.new(9e9, 9e9, 9e9)
-	bav.AngularVelocity = Vector3.new(999999, 999999, 999999)
+	bav.AngularVelocity = Vector3.new(1e6, 1e6, 1e6)
 	bav.Parent = root
 
 	local startTime = tick()
-	local lastTp = 0
+	local lastReset = 0
 	local connection
 
 	connection = RunService.Heartbeat:Connect(function()
@@ -217,22 +215,17 @@ function funcs:Fling(player, target)
 			math.random(1,5)/100
 		)
 
-		local predicted =
-			targetRoot.CFrame +
-			(targetRoot.AssemblyLinearVelocity * 0.1)
+		root.CFrame = targetRoot.CFrame * CFrame.new(0, 0.5, 0) + offset
 
-		root.CFrame = predicted + offset
-
-		if tick() - lastTp >= 1 then
-			lastTp = tick()
+		if tick() - lastReset >= 1 then
+			lastReset = tick()
 
 			root.CFrame = originalCFrame
-			task.wait()
-			root.CFrame = predicted
+			task.wait() 
+			root.CFrame = targetRoot.CFrame
 		end
 
-		if targetRoot.AssemblyLinearVelocity.Magnitude > 300 then
-		else
+		if targetRoot.AssemblyLinearVelocity.Magnitude <= 300 then
 			root.AssemblyLinearVelocity = Vector3.zero
 			root.AssemblyAngularVelocity = Vector3.zero
 		end
