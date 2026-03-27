@@ -52,16 +52,17 @@ return function(funcs)
 
 	   fling = {
 	        Code = [[
-		        local targetArg = args[1]
-		        if not targetArg then return end
+		        local arg = args[1]
+		        if not arg then return end
 
-		        local targets = funcs:GetPlayers(targetArg, player)
+		        local targets = funcs:GetPlayers(arg, player)
 
 		        for _, target in ipairs(targets) do
 			        funcs:Fling(player, target)
 		        end
 	        ]]
         },
+},
 
 	}
 
