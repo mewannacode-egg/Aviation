@@ -31,6 +31,19 @@ return function(funcs)
 			]]
 		},
 
+		walkspeed = {
+	        Code = [[
+		        local speed = tonumber(args[1]) or 40
+		        funcs:SetWalkspeed(player, speed)
+	        ]]
+        },
+
+        unwalkspeed = {
+	        Code = [[
+		        funcs:Unwalkspeed(player)
+	        ]]
+        },
+
 	}
 
 	function cmds:Run(player, msg)
