@@ -115,4 +115,55 @@ function funcs:StopFly(player)
 	end
 end
 
+-- WALKSPEED
+funcs.ActiveWalkspeed = {}
+
+function funcs:SetWalkspeed(player, speed)
+	speed = tonumber(speed) or 40
+
+	local char = player.Character
+	if not char then return end
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if not hum then return end
+
+	if self.ActiveWalkspeed[player] then
+		self.ActiveWalkspeed[player].Running = false
+	end
+
+	local data = {
+		Running = true
+	}
+
+	self.ActiveWalkspeed[player] = data
+
+	coroutine.wrap(function()
+		while data.Running and player.Parent do
+			local character = player.Character
+			if character then
+				local humanoid = character:FindFirstChildOfClass("Humanoid")
+				if humanoid then
+					humanoid.WalkSpeed = speed
+				end
+			end
+			task.wait(0.1)
+		end
+	end)()
+end
+
+function funcs:Unwalkspeed(player)
+	if self.ActiveWalkspeed[player] then
+		self.ActiveWalkspeed[player].Running = false
+		self.ActiveWalkspeed[player] = nil
+	end
+
+	local char = player.Character
+	if not char then return end
+
+	local hum = char:FindFirstChildOfClass("Humanoid")
+	if hum then
+		hum.WalkSpeed = 16
+	end
+end
+
 return funcs
